@@ -28,17 +28,15 @@ class GRIBInfo(object):
 
 class GRIBReader(object):
 
-    def __init__(self, grib_file, w_perturb=False):
+    def __init__(self, grib_file, indexes=('shortName',)):
         grib_no_fail_on_wrong_length(True)
         self._grib_file = os.path.abspath(grib_file)
         self._file_handler = None
         self._grbindx = None
+        index_keys = indexes
 
         try:
-            index_keys = ['shortName']
-            if w_perturb:
-                index_keys.append('perturbationNumber')
-            self._grbindx = grib_index_new_from_file(str(self._grib_file), index_keys)  # open(self._grib_file)
+            self._grbindx = grib_index_new_from_file(str(self._grib_file), index_keys)
         except GribInternalError:
             self._file_handler = open(self._grib_file)
         self._selected_grbs = []
@@ -162,7 +160,6 @@ class GRIBReader(object):
             else:
                 type_of_step = grib_get(self._selected_grbs[0], 'stepType')
                 unit = grib_get(self._selected_grbs[0], 'units')
-            short_name = grib_get(self._selected_grbs[0], 'shortName')
             type_of_level = grib_get(self._selected_grbs[0], 'levelType')
 
             missing_value = grib_get(self._selected_grbs[0], 'missingValue')

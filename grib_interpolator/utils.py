@@ -50,9 +50,9 @@ def now_string(fmt='%Y-%m-%d %H:%M'):
 def progress_step_and_backchar(num_cells):
     progress_step = num_cells / 250
     back_char = '\r'
-    if not stdout.isatty():
-        # out is being redirected
-        back_char = '\n'
-        progress_step *= 10
+    # if not stdout.isatty():
+    #     # out is being redirected
+    #     back_char = '\n'
+    #     progress_step *= 10
     return back_char, progress_step
 
