@@ -56,7 +56,7 @@ You also need to install GRIB API python interface.
 Please refer to GRIB API docs for details: [GRIB API docs](https://software.ecmwf.int/wiki/display/GRIB)
 
 Usage
------
+=====
 
 The API provides an easy way to read messages from a GRIB file and to interpolate values against a target grid.
 Interpolation process can take really long so calculated indexes and weights are being stored 
