@@ -3,8 +3,6 @@ This software comes as Open Source and licensed via AGPL v3.
 It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).
 """
 
-from sys import stdout
-
 import numpy as np
 from datetime import datetime
 

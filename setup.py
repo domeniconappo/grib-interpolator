@@ -1,3 +1,8 @@
+"""
+This software comes as Open Source and licensed via AGPL v3.
+It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).
+"""
+
 from distutils.core import setup
 
 packages_deps = ['numpy>=1.10.1', 'scipy>=0.16.0', 'numexpr>=2.4.6']
