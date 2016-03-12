@@ -17,8 +17,12 @@ Available methods are:
 Known problems
 --------------
 
-GRIB API doesn't interpolate rotated grids yet so you have to use scipy methods. In this case, target grid must be regular
-to avoid problems at extreme regions.
+* GRIB API doesn't interpolate rotated grids yet so you have to use scipy methods. In this case, target grid must be regular
+to avoid problems at extreme regions or grid borders.
+
+* Missing values for input GRIBs are not properly handled yet.
+
+
 
 Installation
 ------------
