@@ -1,4 +1,7 @@
 """
+This software comes as Open Source and licensed via AGPL v3.
+It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).
+
 Grib interpolation utils.
 Interpolating between global grids it takes 3 days on Intel(R) Core(TM) i7-3610QM CPU @ 2.30GHz.
 Parallelized versions gives 4x gain at least.

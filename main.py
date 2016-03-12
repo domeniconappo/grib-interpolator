@@ -5,8 +5,8 @@ import numpy as np
 if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     variable = '2t'
-    from grib_interpolator.base import Interpolator
-    from grib_interpolator.gribreader import GRIBReader
+    from grib_interpolator import Interpolator
+    from grib_interpolator import GRIBReader
 
     input_file = '/dataset/test_2013330702/EpsN320-2013063000.grb'
     print 'Opening {}'.format(input_file)
@@ -45,10 +45,8 @@ if __name__ == '__main__':
     grid_details = messages.grid_details
     aux_g, aux_v, aux_g2, aux_v2 = reader.get_gids_for_intertable()
 
-    kwargs = {'source_lons': lons, 'source_lats': lats, 'store': '/dataset/interpolator_intertables/cosmo',
-              'source_grid_details': grid_details, 'gid': aux_g, 'mode': 'nearest', 'method': 'scipy'}
-
-    interpolator = Interpolator(**kwargs)
+    interpolator = Interpolator(source_lons=lons, source_lats=lats, source_grid_details=grid_details,
+                                mode='nearest', method='scipy', store='/dataset/interpolator_intertables/cosmo')
     print 'The intertable {} will be created if not existing yet'.format(interpolator.intertable_path)
     for timestep, values in messages.first_resolution_values().iteritems():
         print 'Interpolating timestep {}'.format(timestep)
