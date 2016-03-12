@@ -1,3 +1,14 @@
+LICENSE
+=======
+
+**This software comes as Open Source and licensed via AGPL v3. More details in LICENSE.MD file.
+It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).**
+
+**Author: Domenico Nappo**
+
+**You can use, share and redistribute this software by clearly reporting the statement above.
+If you are going to use it for commercial purposes, please think about to donate something :)**
+
 Intro
 =====
 
@@ -25,12 +36,16 @@ to avoid problems at extreme regions or grid borders.
 
 
 Installation
-------------
+============
 
-With pip tool:
+With pip tool
+-------------
 
     pip install https://bitbucket.org/nappodo/grib-interpolator/get/master.zip
     
+Manually
+--------
+
 Or just download code/clone repository and run
 
     python setup.py
