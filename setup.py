@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-packages_deps = ['xmljson', 'numpy>=1.10.1', 'scipy>=0.16.0', 'GDAL>=1.9.0',
+packages_deps = ['numpy>=1.10.1', 'scipy>=0.16.0',
                  'numexpr>=2.4.6', 'dask[bag]', 'dask[array]', 'toolz']
 
 setup(
