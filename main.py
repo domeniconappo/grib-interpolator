@@ -17,9 +17,14 @@ if __name__ == '__main__':
     reader = GRIBReader(input_file, indexes=('shortName', 'perturbationNumber'))
     # you can filter messages with any key,
     # as startStep, endStep and so on. Filters can also be lists of values to select
-    # Filters can also be lambda functions
+
     # >>> messages = reader.select_messages(shortName=['2t', 'e'], perturbationNumber=[8, 10])
-    messages = reader.select_messages(shortName=variable, perturbationNumber=10)
+
+    # Filters can also be functions (very useful to select messages between a range)
+    start_step = lambda s: s >= 6
+    end_step = lambda s: s <= 120
+    messages = reader.select_messages(shortName=variable, perturbationNumber=10, startStep=start_step, endStep=end_step)
+
     # get coordinates from GRIB
     lats, lons = messages.latlons
     # grid_details is a GridDetails object with some geodetic metadata describing grid, used in interpolation

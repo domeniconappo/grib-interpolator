@@ -13,7 +13,7 @@ class TestReader(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.input_file = '/dataset/test_2013330702/EpsN320-2013063000.grb'
-        cls.reader = GRIBReader(cls.input_file, True)
+        cls.reader = GRIBReader(cls.input_file, indexes=['shortName', 'perturbationNumber'])
 
     @classmethod
     def tearDownClass(cls):
@@ -33,7 +33,7 @@ class TestInterpolator(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.input_file = '/dataset/test_2013330702/EpsN320-2013063000.grb'
-        cls.reader = GRIBReader(cls.input_file, True)
+        cls.reader = GRIBReader(cls.input_file, indexes=['shortName', 'perturbationNumber'])
 
         cls.target_lats = np.load(current_dir + '/target_lats.npy')
         cls.target_lons = np.load(current_dir + '/target_lons.npy')
