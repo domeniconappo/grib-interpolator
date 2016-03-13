@@ -81,29 +81,6 @@ class GRIBReader(object):
             self._file_handler.close()
             self._file_handler = None
 
-    def has_geopotential(self):
-        has_geo = False
-        from pyg2p.main.config import GeopotentialsConfiguration
-        v_selected = GeopotentialsConfiguration.short_names
-        if self._grbindx:
-            for v in v_selected:
-                grib_index_select(self._grbindx, 'shortName', str(v))
-                while 1:
-                    gid = grib_new_from_index(self._grbindx)
-                    if gid is None:
-                        break
-                    has_geo = True
-                    grib_release(gid)
-
-        elif self._file_handler:
-            while 1:
-                gid = grib_new_from_file(self._file_handler)
-                if gid is None:
-                    break
-                has_geo = True
-                grib_release(gid)
-        return has_geo
-
     def scan_grib(self, gribs, kwargs):
         v_selected = kwargs['shortName']
         v_pert = kwargs.get('perturbationNumber', -1)
