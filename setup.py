@@ -5,7 +5,7 @@ It was developed under the initiative Copernicus, EFAS operational center @ECMWF
 
 from distutils.core import setup
 
-packages_deps = ['numpy>=1.10.1', 'scipy>=0.16.0', 'numexpr>=2.4.6']
+packages_deps = ['numpy>=1.10.1', 'scipy>=0.16.0', 'numexpr>=2.4.6', 'dask[bag]', 'dask[array]', 'toolz']
 
 setup(
     name='interpolator',

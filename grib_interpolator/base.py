@@ -8,7 +8,7 @@ import abc
 
 import numpy as np
 
-from grib_interpolator.griblib import grib_nearest, grib_invdist
+from grib_interpolator.griblib import grib_nearest, grib_invdist, grib_invdist_parallel, grib_nearest_parallel
 from grib_interpolator.scipylib import InverseDistance
 from grib_interpolator.utils import mask_it
 
@@ -95,7 +95,10 @@ class GribNearest(_Interpolator):
         result = np.empty(target_lons.shape)
         result.fill(self.target_mv)
         result = mask_it(result, self.target_mv)
-        xs, ys, idxs = grib_nearest(self.gid, target_lats, target_lons, self.target_mv)
+        if not self.parallel:
+            xs, ys, idxs = grib_nearest(self.gid, target_lats, target_lons, self.target_mv)
+        else:
+            xs, ys, idxs = grib_nearest_parallel(self.gid, target_lats, target_lons, self.target_mv)
         intertable = np.asarray([xs, ys, idxs], dtype=np.int32)
         result[xs, ys] = source_values[idxs]
         return result, intertable
@@ -119,9 +122,15 @@ class GribInvdist(GribNearest):
         result = np.empty(target_lons.shape)
         result.fill(self.target_mv)
         result = mask_it(result, self.target_mv)
-        xs, ys, idxs1, idxs2, idxs3, idxs4, coeffs1, coeffs2, coeffs3, coeffs4 = grib_invdist(self.gid, target_lats,
-                                                                                              target_lons,
-                                                                                              self.target_mv)
+        if not self.parallel:
+            xs, ys, idxs1, idxs2, idxs3, idxs4, coeffs1, coeffs2, coeffs3, coeffs4 = grib_invdist(self.gid, target_lats,
+                                                                                                  target_lons,
+                                                                                                  self.target_mv)
+        else:
+            xs, ys, idxs1, idxs2, idxs3, idxs4, coeffs1, coeffs2, coeffs3, coeffs4 = grib_invdist_parallel(self.gid,
+                                                                                                           target_lats,
+                                                                                                           target_lons,
+                                                                                                           self.target_mv)
         indexes = np.asarray([xs, ys, idxs1, idxs2, idxs3, idxs4], dtype=np.int32)
         coeffs = np.asarray([coeffs1, coeffs2, coeffs3, coeffs4, np.zeros(coeffs1.shape), np.zeros(coeffs1.shape)])
         intertable = np.rec.fromarrays((indexes, coeffs), names=('indexes', 'coeffs'))

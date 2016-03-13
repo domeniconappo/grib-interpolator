@@ -1,13 +1,13 @@
 LICENSE
 =======
 
-**This software comes as Open Source and licensed via AGPL v3. More details in LICENSE.MD file.
+**This software comes as Open Source and it's licensed via AGPL v3. More details in LICENSE.MD file.
 It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).**
 
 **Author: Domenico Nappo**
 
 **You can use, share and redistribute this software by clearly reporting the statement above.
-If you plan to use it for commercial purposes, please think about to donate something 
+If you plan to use it for commercial purposes, please consider to donate 
 to support maintenance and further development.**
 
 [![Donate paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GSNG8RN77WWNA)
@@ -15,9 +15,12 @@ to support maintenance and further development.**
 Intro
 =====
 
-The grib_interpolator package is a python API to read GRIB files and interpolate values for any target grid.
+The grib_interpolator package is a pure python API to read GRIB files and interpolate values for any target grid.
 
 It's a light and generalized version of part of python code that was developed under the Copernicus EFAS operational center @ECMWF.
+
+It uses GRIB API python interface for GRIB file handling and vaules interpolation. Interpolation is also provided 
+via scipy modules.
 
 It handles GRIB files up to two resolutions messages, and interpolates values using multiple methods with Interpolator class.
 
@@ -36,6 +39,7 @@ to avoid problems at extreme regions or grid borders.
 
 * Missing values for input GRIBs are not properly handled yet.
 
+* Tested with regular, reduced and rotated grid types. Probably won't work with other grids.
 
 
 Installation
@@ -49,11 +53,11 @@ With pip tool
 Manually
 --------
 
-Or just download code/clone repository and run
+Just download code/clone repository and run
 
     python setup.py
     
-Setup will install dependencies as numpy, scipy and numexpr (if not already present in your python/virtualenv). 
+Setup will install dependencies as numpy, scipy and numexpr (if not already present in your python setup/virtualenv). 
 
 You also need to install GRIB API python interface. 
 Please refer to GRIB API docs for details: [GRIB API docs](https://software.ecmwf.int/wiki/display/GRIB)
@@ -62,14 +66,27 @@ Usage
 =====
 
 The API provides an easy way to read messages from a GRIB file and to interpolate values against a target grid.
-Interpolation process can take really long so calculated indexes and weights are being stored 
-in a pickled numpy array under a folder of choice and automatically selected for future interpolations 
-(filenaming is based on source grid metadata). Use one folder per each target grid you have, 
-otherwise intertables will be overwritten and you can have unexpected results!
+Interpolation process can take really long so calculated indexes and weights are stored 
+in a pickled numpy array under a folder of choice, and automatically selected for future interpolations 
+(filenaming is based on source grid metadata). 
+
+Use one folder per each target grid you have, otherwise interpolation tables 
+will be overwritten and you can have unexpected results.
+
+Intertable (coefficients file) are computed with parallel processing by default. 
+However, you can instantiate Interpolator object with parallel=False to avoid parallelization, in case of any issue.
+ 
+```python
+# mode can be 'nearest', 'invdist'. method can be 'grib' or 'scipy'
+interpolator = Interpolator(source_lons=lons, source_lats=lats,
+                            source_grid_details=grid_details,
+                            gid=aux_g, mode='nearest', method='grib', 
+                            store=store, parallel=False)
+```
+ 
 
 If your target grid is rotated, include the flag _rotated_target_ when instatiate Interpolator.
-There isn't a flag for rotated source grids since you should never have such input grids, as coordinates are always transformed to 
-regular grid when read through GRIB API.
+
 
 ```python
 import os

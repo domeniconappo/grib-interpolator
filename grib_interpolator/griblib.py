@@ -3,19 +3,26 @@ This software comes as Open Source and licensed via AGPL v3.
 It was developed under the initiative Copernicus, EFAS operational center @ECMWF (Reading, UK).
 
 Grib interpolation utils.
-Interpolating between global grids it takes 3 days on Intel(R) Core(TM) i7-3610QM CPU @ 2.30GHz.
-Parallelized versions gives 4x gain at least.
+Interpolating between global octahedral grid and target global regular grid
+takes 3 days on Intel(R) Core(TM) i7-3610QM CPU @ 2.30GHz, numprocessor=8.
+
+Parallelized (default behavior) versions gives 6x gain on the same machine.
+If you don't want to use parallel processing, set parallel=False when you instantiate Interpolator object.
 """
 
 from __future__ import division
 
 import itertools
 import warnings
+from functools import partial
 from sys import stdout
 
 import gribapi
 import numexpr as ne
 import numpy as np
+
+from dask import bag
+from dask.diagnostics import ProgressBar
 
 from utils import progress_step_and_backchar, empty, int_fill_value, now_string
 
@@ -136,3 +143,133 @@ def _compute_coeffs_and_idxs(n_nearest):
     idx3 = n_nearest[2]['index'] if not exact_position else 0
     idx4 = n_nearest[3]['index'] if not exact_position else 0
     return inv1, inv2, inv3, inv4, idx1, idx2, idx3, idx4
+
+##############################################
+# Pallel version of grib api nearest neighbour
+
+
+def apply_nearest_to_chunk(chunk, gid=None, mv=None):
+    return np.apply_along_axis(nearest_parallel_step, 0, chunk, gid, mv)
+
+
+def nearest_parallel_step(chunk, gid, mv):
+    lat, lon, x, y = chunk
+
+    idx = int_fill_value
+    if not (lon <= -1.0e+10 or lon == mv):
+        try:
+            n_nearest = gribapi.grib_find_nearest(gid, np.asscalar(lat), np.asscalar(lon))
+        except gribapi.GribInternalError:
+            x = int_fill_value
+            y = int_fill_value
+        else:
+            idx = n_nearest[0]['index']
+    return int(x), int(y), idx
+
+
+def grib_nearest_parallel(gid, target_lats, target_lons, mv):
+    nchunks = target_lats.shape[0]
+    apply_to_chunk_part = partial(apply_nearest_to_chunk, gid=gid, mv=mv)
+    result = init_parallel(apply_to_chunk_part, mv, nchunks, target_lats, target_lons)
+    progress = ProgressBar(dt=10)
+    with progress:
+        result = result.compute()
+    idxs, xs, ys = concatenate_nearest_result(nchunks, result)
+    return xs, ys, idxs
+
+
+def concatenate_nearest_result(nchunks, result):
+    xs = np.concatenate([result[i][0] for i in xrange(nchunks)])
+    ys = np.concatenate([result[i][1] for i in xrange(nchunks)])
+    idxs = np.concatenate([result[i][2] for i in xrange(nchunks)])
+    xs = xs[xs != int_fill_value]
+    ys = ys[ys != int_fill_value]
+    idxs = idxs[idxs != int_fill_value]
+    return idxs, xs, ys
+
+
+# Parallel version of grib api invdist
+
+
+def apply_invdist_to_chunk(chunk, gid=None, mv=None):
+    return np.apply_along_axis(invdist_parallel_step, 0, chunk, gid, mv)
+
+
+def invdist_parallel_step(chunk, gid, mv):
+    lat, lon, x, y = chunk
+    idx1 = idx2 = idx3 = idx4 = int_fill_value
+    inv1 = inv2 = inv3 = inv4 = np.NaN
+    if not (lon < -1.0e+10 or lon == mv):
+        try:
+            # TODO CHECK IF asscalar is really needed here
+            n_nearest = gribapi.grib_find_nearest(gid, np.asscalar(lat), np.asscalar(lon), npoints=4)
+        except gribapi.GribInternalError:
+            # tipically "out of grid" error
+            x = int_fill_value
+            y = int_fill_value
+        else:
+            inv1, inv2, inv3, inv4, idx1, idx2, idx3, idx4 = _compute_coeffs_and_idxs(n_nearest)
+    return x, y, idx1, idx2, idx3, idx4, inv1, inv2, inv3, inv4
+
+
+def grib_invdist_parallel(gid, target_lats, target_lons, mv):
+
+    apply_to_chunk_part = partial(apply_invdist_to_chunk, gid=gid, mv=mv)
+    nchunks = target_lats.shape[0]
+    result = init_parallel(apply_to_chunk_part, mv, nchunks, target_lats, target_lons)
+
+    progress = ProgressBar(dt=10)
+    with progress:
+        result = result.compute()
+    idxs1, idxs2, idxs3, idxs4, xs, ys, invs1, invs2, invs3, invs4 = concatenate_invdist_result(nchunks, result)
+
+    sums = ne.evaluate('invs1 + invs2 + invs3 + invs4')
+    coeffs1 = ne.evaluate('invs1 / sums')
+    coeffs2 = ne.evaluate('invs2 / sums')
+    coeffs3 = ne.evaluate('invs3 / sums')
+    coeffs4 = ne.evaluate('invs4 / sums')
+
+    xs = xs[xs != int_fill_value]
+    ys = ys[ys != int_fill_value]
+    idxs1 = idxs1[idxs1 != int_fill_value]
+    idxs2 = idxs2[idxs2 != int_fill_value]
+    idxs3 = idxs3[idxs3 != int_fill_value]
+    idxs4 = idxs4[idxs4 != int_fill_value]
+    return xs, ys, idxs1, idxs2, idxs3, idxs4, coeffs1, coeffs2, coeffs3, coeffs4
+
+
+def concatenate_invdist_result(nchunks, result):
+    xs = np.concatenate([result[i][0] for i in xrange(nchunks)])
+    ys = np.concatenate([result[i][1] for i in xrange(nchunks)])
+    idxs1 = np.concatenate([result[i][2] for i in xrange(nchunks)])
+    idxs2 = np.concatenate([result[i][3] for i in xrange(nchunks)])
+    idxs3 = np.concatenate([result[i][4] for i in xrange(nchunks)])
+    idxs4 = np.concatenate([result[i][5] for i in xrange(nchunks)])
+    invs1 = np.concatenate([result[i][6] for i in xrange(nchunks)])
+    invs2 = np.concatenate([result[i][7] for i in xrange(nchunks)])
+    invs3 = np.concatenate([result[i][8] for i in xrange(nchunks)])
+    invs4 = np.concatenate([result[i][9] for i in xrange(nchunks)])
+    xs = xs.astype(int, copy=False)
+    ys = ys.astype(int, copy=False)
+    idxs1 = idxs1.astype(int, copy=False)
+    idxs2 = idxs2.astype(int, copy=False)
+    idxs3 = idxs3.astype(int, copy=False)
+    idxs4 = idxs4.astype(int, copy=False)
+    invs1 = invs1[~np.isnan(invs1)]
+    invs2 = invs2[~np.isnan(invs2)]
+    invs3 = invs3[~np.isnan(invs3)]
+    invs4 = invs4[~np.isnan(invs4)]
+    return idxs1, idxs2, idxs3, idxs4, xs, ys, invs1, invs2, invs3, invs4
+
+
+def init_parallel(apply_to_chunk_part, mv, nchunks, target_lats, target_lons):
+    indices = np.indices(target_lons.shape)
+    npartitions = max(100, int(nchunks / 10))
+    valid_coords_mask = (target_lons > -1.0e+10) & (target_lons != mv)
+    xs = np.where(valid_coords_mask, indices[0], int_fill_value).ravel()
+    ys = np.where(valid_coords_mask, indices[1], int_fill_value).ravel()
+    stack = np.stack((target_lats.flat, target_lons.flat, xs.flat, ys.flat))
+    chunks = np.array_split(stack, nchunks, axis=1)
+    nearest_bag = bag.from_sequence(chunks, npartitions=npartitions)
+    result = nearest_bag.map(apply_to_chunk_part)
+    return result
