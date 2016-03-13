@@ -17,9 +17,11 @@ Intro
 
 The grib_interpolator package is a pure python API to read GRIB files and interpolate values for any target grid.
 
-It's a light and generalized version of part of python code that was developed under the Copernicus EFAS operational center @ECMWF.
+It's a light and generalized version of part of python code that was developed for the 
+Copernicus EFAS operational center @ECMWF.
 
-It uses GRIB API python interface for GRIB file handling and vaules interpolation. Interpolation is also provided 
+It uses GRIB API python interface for GRIB file handling and values interpolation. 
+Interpolation is also provided 
 via scipy modules.
 
 It handles GRIB files up to two resolutions messages, and interpolates values using multiple methods with Interpolator class.
@@ -86,6 +88,16 @@ interpolator = Interpolator(source_lons=lons, source_lats=lats,
  
 
 If your target grid is rotated, include the flag _rotated_target_ when instatiate Interpolator.
+
+```python
+interpolator = Interpolator(source_lons=lons, source_lats=lats,
+                            source_grid_details=grid_details,
+                            gid=aux_g, mode='nearest', method='grib', 
+                            store=store, rotated_target=True)
+```
+
+
+Check this complete example:
 
 
 ```python
