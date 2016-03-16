@@ -57,7 +57,7 @@ Manually
 
 Just download code/clone repository and run
 
-    python setup.py
+    python setup.py install
     
 Setup will install dependencies as numpy, scipy and numexpr (if not already present in your python setup/virtualenv). 
 
@@ -196,7 +196,3 @@ if __name__ == '__main__':
         np.save(out_file, interpolated_values.data)
     reader.close()
 ```
-
-
-
-
