@@ -7,10 +7,7 @@ It was developed under the initiative Copernicus, EFAS operational center @ECMWF
 **Author: Domenico Nappo**
 
 **You can use, share and redistribute this software by clearly reporting the statement above.
-If you plan to use it for commercial purposes, please consider to donate 
-to support maintenance and further development.**
 
-[![Donate paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GSNG8RN77WWNA)
 
 Intro
 =====
