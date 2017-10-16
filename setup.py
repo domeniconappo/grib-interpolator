@@ -11,7 +11,7 @@ setup(
     name='interpolator',
     version='1.0',
     packages=['grib_interpolator', 'grib_interpolator.tests'],
-    url='https://bitbucket.org/nappodo/grib-interpolator',
+    url='https://github.com/domeniconappo/grib-interpolator',
     license='AGPL v3. Copernicus @ECMWF',
     author='Domenico Nappo',
     author_email='domenico.nappo@gmail.com',
